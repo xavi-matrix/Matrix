@@ -1,0 +1,5 @@
+{
+  "name": "Conversor de Aro de Anel (BR)",
+  "description": "Uma ferramenta para joalheiros que converte o diâmetro interno de um anel para o tamanho de aro padrão brasileiro (ABNT). Insira o diâmetro em milímetros para encontrar o tamanho correspondente instantaneamente.",
+  "requestFramePermissions": []
+}

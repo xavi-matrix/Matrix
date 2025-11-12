@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { RING_SIZE_CHART } from '../constants';
 import RingVisualizer from './RingVisualizer';
 import RingSizeChart from './RingSizeChart';
@@ -10,10 +10,23 @@ const DiamondIcon: React.FC<{ className?: string }> = ({ className }) => (
   </svg>
 );
 
+const CopyIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75" />
+    </svg>
+);
+
+const CheckIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+    </svg>
+);
+
 
 const RingSizeConverter: React.FC = () => {
   const [diameterStr, setDiameterStr] = useState<string>('18.7');
   const [isChartVisible, setIsChartVisible] = useState<boolean>(false);
+  const [isCopied, setIsCopied] = useState<boolean>(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -49,6 +62,22 @@ const RingSizeConverter: React.FC = () => {
 
     return { calculatedSize: closestSize, isValid: true };
   }, [diameterStr]);
+
+  useEffect(() => {
+    // Reset copied state if diameter changes
+    setIsCopied(false);
+  }, [diameterStr]);
+  
+  const handleCopy = async () => {
+    if (calculatedSize === null || !navigator.clipboard) return;
+    try {
+        await navigator.clipboard.writeText(calculatedSize.toString());
+        setIsCopied(true);
+        setTimeout(() => setIsCopied(false), 2000);
+    } catch (err) {
+        console.error('Failed to copy text: ', err);
+    }
+  };
   
   const diameterValue = parseFloat(diameterStr.replace(',', '.')) || 0;
   
@@ -100,14 +129,36 @@ const RingSizeConverter: React.FC = () => {
           <p className="text-sm font-medium text-amber-300 uppercase tracking-widest mb-2">
             Tamanho do Aro (BR)
           </p>
-          <p
-            key={calculatedSize}
-            className={`text-6xl font-bold text-white transition-colors duration-300 ${
-              isValid ? 'animate-pop-in' : ''
-            }`}
-          >
-            {isValid ? calculatedSize : '--'}
-          </p>
+          <div className="flex items-center justify-center gap-3">
+            <p
+              key={calculatedSize}
+              className={`text-6xl font-bold text-white transition-colors duration-300 ${
+                isValid ? 'animate-pop-in' : ''
+              }`}
+            >
+              {isValid ? calculatedSize : '--'}
+            </p>
+            {isValid && (
+              <button
+                onClick={handleCopy}
+                aria-label="Copiar tamanho do aro"
+                className="p-2 rounded-full text-gray-400 hover:bg-gray-700 hover:text-white transition-colors duration-200"
+              >
+                {isCopied ? (
+                  <CheckIcon className="w-6 h-6 text-green-400" />
+                ) : (
+                  <CopyIcon className="w-6 h-6" />
+                )}
+              </button>
+            )}
+          </div>
+          <div className="h-4 mt-1"> {/* Placeholder to prevent layout shift */}
+              {isCopied && (
+                <p className="text-xs text-green-400 animate-slide-fade-in">
+                  Copiado!
+                </p>
+              )}
+          </div>
         </div>
       </div>
       
